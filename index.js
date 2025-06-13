@@ -1,33 +1,64 @@
 import express from 'express'
+import cors from "cors"
+import mongoose from 'mongoose';
+
 const app = express();
+app.use(express.json());
+app.use(cors());
 
-app.listen(8080, () => {
-    console.log("Server started");
+const userSchema = mongoose.Schema({
+    name: { type: String },
+    email: { type: String },
+    pass: { type: String },
+})
+
+const userModel = mongoose.model("user", userSchema);
+
+mongoose.connect("mongodb://localhost:27017/mudb").then(() => {
+    app.listen(8080, () => {
+        console.log("Server started");
+    });
 });
 
-app.get("/products", (req, res) => {
-    const products = [
-        {
-            id: 1,
-            name: "Product 1",
-            desc: "This is the description of the product",
-            price: 45,
-            imgUrl: "https://picsum.photos/id/1/300/300",
-        },
-        {
-            id: 2,
-            name: "Product 2",
-            desc: "This is the description of the product",
-            price: 50,
-            imgUrl: "https://picsum.photos/id/2/300/300",
-        },
-        {
-            id: 3,
-            name: "Product 3",
-            desc: "This is the description of the product",
-            price: 32,
-            imgUrl: "https://picsum.photos/id/3/300/300",
-        },
-  ];
-    res.json(products);
+app.post("/register", async(req, res) => {
+    const body = req.body;
+    const user = await userModel.create(body);
+    res.json(user);
 });
+
+app.post("/login", async (req, res) => {
+    const body = req.body;
+    const found = await userModel.findOne({ email: body.email, pass: body.pass });
+    res.json(found);
+})
+
+
+
+
+
+
+// let products = [];
+
+// app.post("/products", async(req, res) => {
+//     console.log(req.body);
+//     const body = await req.body;
+//     products.push(body);
+//     res.json(body);
+// })
+
+// app.get("/products", async(req, res) => {
+//     res.json(products);
+// });
+
+// let users = [];
+
+// app.post("/users", async(req, res) => {
+//     console.log(req.body);
+//     const body = await req.body;
+//     products.push(body);
+//     res.json(body);
+// })
+
+// app.get("/users", async(req, res) => {
+//     res.json(products);
+// });
